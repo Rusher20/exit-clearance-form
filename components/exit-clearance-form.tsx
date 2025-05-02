@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import SignaturePad from "./signature-pad"
 import { PDFDocument, rgb, StandardFonts } from "pdf-lib"
+import { toast } from "@/hooks/use-toast"
+import { Loader2, Mail } from "lucide-react"
 
 export default function ExitClearanceForm() {
   const [formData, setFormData] = useState({
@@ -34,6 +36,7 @@ export default function ExitClearanceForm() {
 
   const [signature, setSignature] = useState<string | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [pdfGenerated, setPdfGenerated] = useState(false)
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -50,6 +53,35 @@ export default function ExitClearanceForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+
+    // Form validation
+    if (!formData.reasonForSeparation) {
+      toast({
+        title: "Missing Information",
+        description: "Please select a reason for separation.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (!formData.employmentStatus) {
+      toast({
+        title: "Missing Information",
+        description: "Please select an employment status.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (!signature) {
+      toast({
+        title: "Missing Signature",
+        description: "Please provide your signature before submitting.",
+        variant: "destructive",
+      })
+      return
+    }
+
     setIsSubmitting(true)
 
     try {
@@ -85,10 +117,10 @@ export default function ExitClearanceForm() {
       firstPage.drawText(formData.office, { x: 500, y: 705, ...textOptions })
 
       // Contact info, Email, Date Hired, Date Separated
-      firstPage.drawText(formData.emailAddress, { x: 180, y: 650, ...textOptions })
-      firstPage.drawText(formData.contactNo, { x: 280, y: 650, ...textOptions })
-      firstPage.drawText(formData.dateHired, { x: 380, y: 650, ...textOptions })
-      firstPage.drawText(formData.dateSeparation, { x: 520, y: 650, ...textOptions })
+      firstPage.drawText(formData.emailAddress, { x: 90, y: 680, ...textOptions, size: 8 })
+      firstPage.drawText(formData.contactNo, { x: 250, y: 680, ...textOptions })
+      firstPage.drawText(formData.dateHired, { x: 413, y: 680, ...textOptions })
+      firstPage.drawText(formData.dateSeparation, { x: 530, y: 680, ...textOptions, size: 8 })
 
       // Reason for Separation - Mark the selected reason
       const reasonPositions = {
@@ -97,11 +129,10 @@ export default function ExitClearanceForm() {
         redundancy: { x: 49, y: 631 },
         promotion: { x: 49, y: 618 },
         others: { x: 49, y: 605 },
-        transferOfBranch: { x: 240, y: 620 },
-        awol: { x: 240, y: 600 },
-        discontinuance: { x: 240, y: 580 },
-        dismissal: { x: 240, y: 560 },
-        termination: { x: 240, y: 540 },
+        transferOfBranch: { x: 229, y: 656 },
+        awol: { x: 229, y: 644 },
+        discontinuance: { x: 229, y: 631 },
+        termination: { x: 229, y: 618 },
       }
 
       const selectedReason = formData.reasonForSeparation
@@ -117,12 +148,12 @@ export default function ExitClearanceForm() {
 
       // Employment Status - Mark the selected status
       const statusPositions = {
-        consultancy: { x: 420, y: 620 },
-        contractual: { x: 420, y: 600 },
-        fixedTerm: { x: 420, y: 580 },
-        regular: { x: 500, y: 620 },
-        probationary: { x: 500, y: 600 },
-        projectEmployee: { x: 500, y: 580 },
+        consultancy: { x: 382, y: 644 },
+        contractual: { x: 382, y: 630 },
+        fixedTerm: { x: 382, y: 618 },
+        regular: { x: 478, y: 644 },
+        probationary: { x: 478, y: 630 },
+        projectEmployee: { x: 478, y: 618 },
       }
 
       const selectedStatus = formData.employmentStatus
@@ -135,7 +166,7 @@ export default function ExitClearanceForm() {
       if (formData.additionalNotes) {
         const lines = formData.additionalNotes.match(/.{1,80}/g) || []
         lines.forEach((line, index) => {
-          firstPage.drawText(line, { x: 100, y: 300 - index * 15, ...textOptions })
+          firstPage.drawText(line, { x: 99, y: 355 - index * 15, ...textOptions })
         })
       }
 
@@ -151,16 +182,21 @@ export default function ExitClearanceForm() {
         const signatureDims = signatureEmbed.scale(0.5) // adjust scale as needed
 
         // Draw the signature
+        firstPage.drawText(`${formData.firstName} ${formData.middleName} ${formData.lastName}`, {
+          x: 157,
+          y: 275,
+          ...textOptions,
+        })
         firstPage.drawImage(signatureEmbed, {
-          x: 70,
-          y: 110,
+          x: 160,
+          y: 274,
           width: signatureDims.width,
           height: signatureDims.height,
         })
 
         // Add current date next to signature
         const currentDate = new Date().toLocaleDateString()
-        firstPage.drawText(currentDate, { x: 350, y: 100, ...textOptions })
+        firstPage.drawText(currentDate, { x: 350, y: 276, ...textOptions })
       }
 
       // Save the PDF
@@ -174,14 +210,55 @@ export default function ExitClearanceForm() {
       // Auto-download
       const a = document.createElement("a")
       a.href = url
-      a.download = "Exit_Clearance_Form.pdf"
+      a.download = `Exit_Clearance_Form_${formData.lastName}_${formData.firstName}.pdf`
       a.click()
+
+      // Store the employee name for email
+      window.employeeName = `${formData.firstName} ${formData.lastName}`
+      setPdfGenerated(true)
+
+      toast({
+        title: "PDF Generated Successfully",
+        description: "You can now compose an email with this form as an attachment.",
+      })
     } catch (error) {
       console.error("Error generating PDF:", error)
-      alert("Error generating PDF. Please try again.")
+      toast({
+        title: "Error Generating PDF",
+        description: "There was an error generating the PDF. Please try again.",
+        variant: "destructive",
+      })
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  const handleComposeEmail = () => {
+    if (!pdfGenerated) {
+      toast({
+        title: "No PDF Generated",
+        description: "Please generate the PDF first before composing an email.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    const subject = encodeURIComponent(`Exit Clearance Form - ${window.employeeName}`)
+    const body = encodeURIComponent(
+      `Please find attached the exit clearance form for ${window.employeeName}.\n\n` +
+        `Note: Please manually attach the downloaded PDF file named "Exit_Clearance_Form_${formData.lastName}_${formData.firstName}.pdf" to this email.`,
+    )
+
+    // Open Gmail compose window with pre-filled recipients and subject
+    window.open(
+      `https://mail.google.com/mail/?view=cm&fs=1&to=hrteam@progresspro.com.ph&cc=itteam@progresspro.com.ph&su=${subject}&body=${body}`,
+      "_blank",
+    )
+
+    toast({
+      title: "Gmail Compose Opened",
+      description: "Don't forget to attach the downloaded PDF file to your email.",
+    })
   }
 
   return (
@@ -211,6 +288,7 @@ export default function ExitClearanceForm() {
                         value={formData.lastName}
                         onChange={handleChange}
                         className="h-9"
+                        required
                       />
                     </div>
                     <div>
@@ -221,6 +299,7 @@ export default function ExitClearanceForm() {
                         value={formData.firstName}
                         onChange={handleChange}
                         className="h-9"
+                        required
                       />
                     </div>
                     <div>
@@ -231,6 +310,7 @@ export default function ExitClearanceForm() {
                         value={formData.middleName}
                         onChange={handleChange}
                         className="h-9"
+                        required
                       />
                     </div>
                   </div>
@@ -244,11 +324,19 @@ export default function ExitClearanceForm() {
                         value={formData.designation}
                         onChange={handleChange}
                         className="h-9"
+                        required
                       />
                     </div>
                     <div>
                       <Label htmlFor="empNo">Emp. No.:</Label>
-                      <Input id="empNo" name="empNo" value={formData.empNo} onChange={handleChange} className="h-9" />
+                      <Input
+                        id="empNo"
+                        name="empNo"
+                        value={formData.empNo}
+                        onChange={handleChange}
+                        className="h-9"
+                        required
+                      />
                     </div>
                     <div>
                       <Label htmlFor="emailAddress">Email Address:</Label>
@@ -259,6 +347,7 @@ export default function ExitClearanceForm() {
                         value={formData.emailAddress}
                         onChange={handleChange}
                         className="h-9"
+                        required
                       />
                     </div>
                     <div>
@@ -269,6 +358,7 @@ export default function ExitClearanceForm() {
                         value={formData.contactNo}
                         onChange={handleChange}
                         className="h-9"
+                        required
                       />
                     </div>
                   </div>
@@ -284,6 +374,7 @@ export default function ExitClearanceForm() {
                         value={formData.department}
                         onChange={handleChange}
                         className="h-9"
+                        required
                       />
                     </div>
                     <div>
@@ -294,6 +385,7 @@ export default function ExitClearanceForm() {
                         value={formData.office}
                         onChange={handleChange}
                         className="h-9"
+                        required
                       />
                     </div>
                   </div>
@@ -308,6 +400,7 @@ export default function ExitClearanceForm() {
                         value={formData.dateHired}
                         onChange={handleChange}
                         className="h-9"
+                        required
                       />
                     </div>
                     <div>
@@ -319,6 +412,7 @@ export default function ExitClearanceForm() {
                         value={formData.dateSeparation}
                         onChange={handleChange}
                         className="h-9"
+                        required
                       />
                     </div>
                   </div>
@@ -362,6 +456,7 @@ export default function ExitClearanceForm() {
                             onChange={handleChange}
                             className="h-8 w-40 ml-2"
                             placeholder="Specify"
+                            required={formData.reasonForSeparation === "others"}
                           />
                         )}
                       </div>
@@ -385,10 +480,6 @@ export default function ExitClearanceForm() {
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="discontinuance" id="discontinuance" />
                         <Label htmlFor="discontinuance">Discontinuance</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="dismissal" id="dismissal" />
-                        <Label htmlFor="dismissal">Dismissal/Cause</Label>
                       </div>
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="termination" id="termination" />
@@ -492,16 +583,39 @@ export default function ExitClearanceForm() {
             </CardContent>
           </Card>
 
-          <div className="flex justify-end space-x-4 mt-6">
+          <div className="flex flex-wrap justify-end gap-4 mt-6">
             <Button variant="outline" type="button" onClick={() => window.location.reload()}>
               Reset Form
             </Button>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? "Processing..." : "Fill PDF & Download"}
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                "Generate PDF"
+              )}
+            </Button>
+            <Button
+              type="button"
+              onClick={handleComposeEmail}
+              disabled={!pdfGenerated || isSubmitting}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              <Mail className="mr-2 h-4 w-4" />
+              Compose Gmail
             </Button>
           </div>
         </form>
       </div>
     </div>
   )
+}
+
+// Add this to the global Window interface
+declare global {
+  interface Window {
+    employeeName: string
+  }
 }
