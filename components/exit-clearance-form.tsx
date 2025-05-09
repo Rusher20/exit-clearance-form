@@ -9,10 +9,9 @@ import { Label } from "@/components/ui/label"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
-import SignaturePad from "./signature-pad"
 import { PDFDocument, rgb, StandardFonts } from "pdf-lib"
 import { toast } from "@/hooks/use-toast"
-import { Loader2, Mail } from "lucide-react"
+import { Loader2, Upload } from "lucide-react"
 
 export default function ExitClearanceForm() {
   const [formData, setFormData] = useState({
@@ -49,6 +48,19 @@ export default function ExitClearanceForm() {
 
   const handleEmploymentStatusChange = (value: string) => {
     setFormData((prev) => ({ ...prev, employmentStatus: value }))
+  }
+
+  const handleSignatureImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          setSignature(event.target.result as string)
+        }
+      }
+      reader.readAsDataURL(file)
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -166,7 +178,7 @@ export default function ExitClearanceForm() {
       if (formData.additionalNotes) {
         const lines = formData.additionalNotes.match(/.{1,80}/g) || []
         lines.forEach((line, index) => {
-          firstPage.drawText(line, { x: 99, y: 355 - index * 15, ...textOptions })
+          firstPage.drawText(line, { x: 99, y: 356 - index * 10, ...textOptions })
         })
       }
 
@@ -179,19 +191,21 @@ export default function ExitClearanceForm() {
 
         // Embed the signature image
         const signatureEmbed = await pdfDoc.embedPng(signatureUint8Array)
-        const signatureDims = signatureEmbed.scale(0.5) // adjust scale as needed
+        const signatureDims = signatureEmbed.scale(0.15) // Reduced scale from 0.25 to 0.15
 
-        // Draw the signature
+        // Draw the signature - position it above the name
+        firstPage.drawImage(signatureEmbed, {
+          x: 168,
+          y: 265, // Increased y value to move signature above the name
+          width: signatureDims.width,
+          height: signatureDims.height,
+        })
+
+        // Draw the name text below the signature
         firstPage.drawText(`${formData.firstName} ${formData.middleName} ${formData.lastName}`, {
           x: 157,
           y: 275,
           ...textOptions,
-        })
-        firstPage.drawImage(signatureEmbed, {
-          x: 160,
-          y: 274,
-          width: signatureDims.width,
-          height: signatureDims.height,
         })
 
         // Add current date next to signature
@@ -233,32 +247,45 @@ export default function ExitClearanceForm() {
     }
   }
 
-  const handleComposeEmail = () => {
+  // const handleComposeEmail = () => {
+  //   if (!pdfGenerated) {
+  //     toast({
+  //       title: "No PDF Generated",
+  //       description: "Please generate the PDF first before composing an email.",
+  //       variant: "destructive",
+  //     })
+  //     return
+  //   }
+
+  //   const subject = encodeURIComponent(`Exit Clearance Form - ${window.employeeName}`)
+  //   const body = encodeURIComponent(
+  //     `Please find attached the exit clearance form for ${window.employeeName}.\n\n` +
+  //       `Note: Please manually attach the downloaded PDF file named "Exit_Clearance_Form_${formData.lastName}_${formData.firstName}.pdf" to this email.`,
+  //   )
+
+  //   // Open Gmail compose window with pre-filled recipients and subject
+  //   window.open(
+  //     `https://mail.google.com/mail/?view=cm&fs=1&to=hrteam@progresspro.com.ph&cc=itteam@progresspro.com.ph&su=${subject}&body=${body}`,
+  //     "_blank",
+  //   )
+
+  //   toast({
+  //     title: "Gmail Compose Opened",
+  //     description: "Don't forget to attach the downloaded PDF file to your email.",
+  //   })
+  // }
+  const handleNextPage = () => {
     if (!pdfGenerated) {
       toast({
         title: "No PDF Generated",
-        description: "Please generate the PDF first before composing an email.",
+        description: "Please generate the PDF first before proceeding to the next page.",
         variant: "destructive",
       })
       return
     }
 
-    const subject = encodeURIComponent(`Exit Clearance Form - ${window.employeeName}`)
-    const body = encodeURIComponent(
-      `Please find attached the exit clearance form for ${window.employeeName}.\n\n` +
-        `Note: Please manually attach the downloaded PDF file named "Exit_Clearance_Form_${formData.lastName}_${formData.firstName}.pdf" to this email.`,
-    )
-
-    // Open Gmail compose window with pre-filled recipients and subject
-    window.open(
-      `https://mail.google.com/mail/?view=cm&fs=1&to=hrteam@progresspro.com.ph&cc=itteam@progresspro.com.ph&su=${subject}&body=${body}`,
-      "_blank",
-    )
-
-    toast({
-      title: "Gmail Compose Opened",
-      description: "Don't forget to attach the downloaded PDF file to your email.",
-    })
+    // Navigate to the next page
+    window.location.href = "/exit-interview" // Replace with your actual next page URL
   }
 
   return (
@@ -289,6 +316,7 @@ export default function ExitClearanceForm() {
                         onChange={handleChange}
                         className="h-9"
                         required
+                        tabIndex={1}
                       />
                     </div>
                     <div>
@@ -300,6 +328,7 @@ export default function ExitClearanceForm() {
                         onChange={handleChange}
                         className="h-9"
                         required
+                        tabIndex={2}
                       />
                     </div>
                     <div>
@@ -311,6 +340,7 @@ export default function ExitClearanceForm() {
                         onChange={handleChange}
                         className="h-9"
                         required
+                        tabIndex={3}
                       />
                     </div>
                   </div>
@@ -325,6 +355,7 @@ export default function ExitClearanceForm() {
                         onChange={handleChange}
                         className="h-9"
                         required
+                        tabIndex={5}
                       />
                     </div>
                     <div>
@@ -336,6 +367,7 @@ export default function ExitClearanceForm() {
                         onChange={handleChange}
                         className="h-9"
                         required
+                        tabIndex={7}
                       />
                     </div>
                     <div>
@@ -348,6 +380,7 @@ export default function ExitClearanceForm() {
                         onChange={handleChange}
                         className="h-9"
                         required
+                        tabIndex={9}
                       />
                     </div>
                     <div>
@@ -359,6 +392,7 @@ export default function ExitClearanceForm() {
                         onChange={handleChange}
                         className="h-9"
                         required
+                        tabIndex={11}
                       />
                     </div>
                   </div>
@@ -375,6 +409,7 @@ export default function ExitClearanceForm() {
                         onChange={handleChange}
                         className="h-9"
                         required
+                        tabIndex={4}
                       />
                     </div>
                     <div>
@@ -386,6 +421,7 @@ export default function ExitClearanceForm() {
                         onChange={handleChange}
                         className="h-9"
                         required
+                        tabIndex={6}
                       />
                     </div>
                   </div>
@@ -401,6 +437,7 @@ export default function ExitClearanceForm() {
                         onChange={handleChange}
                         className="h-9"
                         required
+                        tabIndex={8}
                       />
                     </div>
                     <div>
@@ -413,6 +450,7 @@ export default function ExitClearanceForm() {
                         onChange={handleChange}
                         className="h-9"
                         required
+                        tabIndex={10}
                       />
                     </div>
                   </div>
@@ -430,23 +468,23 @@ export default function ExitClearanceForm() {
                       className="space-y-2"
                     >
                       <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="voluntaryResignation" id="voluntaryResignation" />
+                        <RadioGroupItem value="voluntaryResignation" id="voluntaryResignation" tabIndex={12} />
                         <Label htmlFor="voluntaryResignation">Voluntary Resignation</Label>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="endOfProbationary" id="endOfProbationary" />
+                        <RadioGroupItem value="endOfProbationary" id="endOfProbationary" tabIndex={13} />
                         <Label htmlFor="endOfProbationary">End of Probationary Employment</Label>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="redundancy" id="redundancy" />
+                        <RadioGroupItem value="redundancy" id="redundancy" tabIndex={14} />
                         <Label htmlFor="redundancy">Redundancy</Label>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="promotion" id="promotion" />
+                        <RadioGroupItem value="promotion" id="promotion" tabIndex={15} />
                         <Label htmlFor="promotion">Promotion</Label>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="others" id="others" />
+                        <RadioGroupItem value="others" id="others" tabIndex={16} />
                         <Label htmlFor="others">Others</Label>
                         {formData.reasonForSeparation === "others" && (
                           <Input
@@ -457,6 +495,7 @@ export default function ExitClearanceForm() {
                             className="h-8 w-40 ml-2"
                             placeholder="Specify"
                             required={formData.reasonForSeparation === "others"}
+                            tabIndex={17}
                           />
                         )}
                       </div>
@@ -470,19 +509,19 @@ export default function ExitClearanceForm() {
                       className="space-y-2"
                     >
                       <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="transferOfBranch" id="transferOfBranch" />
+                        <RadioGroupItem value="transferOfBranch" id="transferOfBranch" tabIndex={18} />
                         <Label htmlFor="transferOfBranch">Transfer of Branch (lateral)</Label>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="awol" id="awol" />
+                        <RadioGroupItem value="awol" id="awol" tabIndex={19} />
                         <Label htmlFor="awol">Work Abandonment</Label>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="discontinuance" id="discontinuance" />
+                        <RadioGroupItem value="discontinuance" id="discontinuance" tabIndex={20} />
                         <Label htmlFor="discontinuance">Discontinuance</Label>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="termination" id="termination" />
+                        <RadioGroupItem value="termination" id="termination" tabIndex={21} />
                         <Label htmlFor="termination">Termination For Cause</Label>
                       </div>
                     </RadioGroup>
@@ -499,30 +538,30 @@ export default function ExitClearanceForm() {
                       <div className="grid grid-cols-2 gap-2">
                         <div className="space-y-2">
                           <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="consultancy" id="consultancy" />
+                            <RadioGroupItem value="consultancy" id="consultancy" tabIndex={22} />
                             <Label htmlFor="consultancy">Consultancy</Label>
                           </div>
                           <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="contractual" id="contractual" />
+                            <RadioGroupItem value="contractual" id="contractual" tabIndex={23} />
                             <Label htmlFor="contractual">Contractual</Label>
                           </div>
                           <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="fixedTerm" id="fixedTerm" />
+                            <RadioGroupItem value="fixedTerm" id="fixedTerm" tabIndex={24} />
                             <Label htmlFor="fixedTerm">Fixed-Term</Label>
                           </div>
                         </div>
 
                         <div className="space-y-2">
                           <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="regular" id="regular" />
+                            <RadioGroupItem value="regular" id="regular" tabIndex={25} />
                             <Label htmlFor="regular">Regular</Label>
                           </div>
                           <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="probationary" id="probationary" />
+                            <RadioGroupItem value="probationary" id="probationary" tabIndex={26} />
                             <Label htmlFor="probationary">Probationary</Label>
                           </div>
                           <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="projectEmployee" id="projectEmployee" />
+                            <RadioGroupItem value="projectEmployee" id="projectEmployee" tabIndex={27} />
                             <Label htmlFor="projectEmployee">Project Employee</Label>
                           </div>
                         </div>
@@ -551,6 +590,7 @@ export default function ExitClearanceForm() {
                     value={formData.additionalNotes}
                     onChange={handleChange}
                     className="h-20"
+                    tabIndex={28}
                   />
                 </div>
               </div>
@@ -568,15 +608,55 @@ export default function ExitClearanceForm() {
 
               {/* Employee Signature */}
               <div className="mt-6 border p-4 rounded-md">
-                <SignaturePad onSignatureChange={setSignature} label="Employee Signature" width={200} height={50} />
+                <div className="mb-4">
+                  <h3 className="font-semibold mb-2">Employee Signature:</h3>
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <div className="flex-1">
+                      <Label htmlFor="signatureUpload" className="block mb-2">
+                        Upload Signature Image
+                      </Label>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => document.getElementById("signatureUpload")?.click()}
+                          className="w-full"
+                          tabIndex={29}
+                        >
+                          <Upload className="mr-2 h-4 w-4" />
+                          Upload Image
+                        </Button>
+                        <input
+                          id="signatureUpload"
+                          type="file"
+                          accept="image/*"
+                          onChange={handleSignatureImageUpload}
+                          className="hidden"
+                          tabIndex={-1} // Hidden input, not in tab order
+                        />
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">Supported format: PNG </p>
+                    </div>
+                  </div>
+                </div>
                 {signature && (
                   <div className="mt-4">
-                    <p className="text-sm text-gray-500 mb-2">Preview:</p>
+                    <p className="text-sm text-gray-500 mb-2">Signature Preview:</p>
                     <img
                       src={signature || "/placeholder.svg"}
                       alt="Signature"
                       className="border border-gray-200 max-w-[200px]"
                     />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="mt-2 text-red-500 hover:text-red-700"
+                      onClick={() => setSignature(null)}
+                      tabIndex={30}
+                    >
+                      Clear Signature
+                    </Button>
                   </div>
                 )}
               </div>
@@ -584,10 +664,10 @@ export default function ExitClearanceForm() {
           </Card>
 
           <div className="flex flex-wrap justify-end gap-4 mt-6">
-            <Button variant="outline" type="button" onClick={() => window.location.reload()}>
+            <Button variant="outline" type="button" onClick={() => window.location.reload()} tabIndex={31}>
               Reset Form
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting} tabIndex={32}>
               {isSubmitting ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -597,7 +677,7 @@ export default function ExitClearanceForm() {
                 "Generate PDF"
               )}
             </Button>
-            <Button
+            {/* <Button
               type="button"
               onClick={handleComposeEmail}
               disabled={!pdfGenerated || isSubmitting}
@@ -605,6 +685,16 @@ export default function ExitClearanceForm() {
             >
               <Mail className="mr-2 h-4 w-4" />
               Compose Gmail
+            </Button> */}
+
+            <Button
+              type="button"
+              onClick={handleNextPage}
+              disabled={!pdfGenerated || isSubmitting}
+              className="bg-green-600 hover:bg-green-700"
+              tabIndex={33}
+            >
+              Next
             </Button>
           </div>
         </form>
