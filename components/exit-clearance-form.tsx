@@ -355,7 +355,7 @@ export default function ExitClearanceForm() {
                         onChange={handleChange}
                         className="h-9"
                         required
-                        tabIndex={5}
+                        tabIndex={6}
                       />
                     </div>
                     <div>
@@ -380,19 +380,22 @@ export default function ExitClearanceForm() {
                         onChange={handleChange}
                         className="h-9"
                         required
-                        tabIndex={9}
+                        tabIndex={10}
                       />
                     </div>
                     <div>
                       <Label htmlFor="contactNo">Contact No.:</Label>
                       <Input
-                        id="contactNo"
-                        name="contactNo"
-                        value={formData.contactNo}
-                        onChange={handleChange}
-                        className="h-9"
-                        required
-                        tabIndex={11}
+                           id="contactNo"
+                           name="contactNo"
+                           type="tel"
+                           pattern="[0-9]*"
+                           inputMode="numeric"
+                           value={formData.contactNo}
+                           onChange={handleChange}
+                           className="h-9"
+                           required
+                           tabIndex={11}
                       />
                     </div>
                   </div>
@@ -421,7 +424,7 @@ export default function ExitClearanceForm() {
                         onChange={handleChange}
                         className="h-9"
                         required
-                        tabIndex={6}
+                        tabIndex={5}
                       />
                     </div>
                   </div>
@@ -450,7 +453,7 @@ export default function ExitClearanceForm() {
                         onChange={handleChange}
                         className="h-9"
                         required
-                        tabIndex={10}
+                        tabIndex={9}
                       />
                     </div>
                   </div>
