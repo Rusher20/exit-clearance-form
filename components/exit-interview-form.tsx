@@ -52,7 +52,7 @@ export default function ExitInterview(){
             
             <h3 className=" text-lg mb-[5px]"> Please fill up the form: </h3>
 
-            <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSfiVKL6mfpJCnG5BgMKRcFSoODtRi6NWTvI4ZKBGIzHK6sUXg/viewform?embedded=true" width="900" height="800"  >Loading…</iframe>
+            <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSfiVKL6mfpJCnG5BgMKRcFSoODtRi6NWTvI4ZKBGIzHK6sUXg/viewform?embedded=true" width="900" height="500"  ></iframe>
                 {/* <div>
                   <div className="flex space-y-2">
                     <RadioGroup

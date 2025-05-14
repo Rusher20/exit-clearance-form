@@ -13,6 +13,7 @@ import { PDFDocument, rgb, StandardFonts } from "pdf-lib"
 import { toast } from "@/hooks/use-toast"
 import { Loader2, Upload } from "lucide-react"
 
+
 export default function ExitClearanceForm() {
   const [formData, setFormData] = useState({
     lastName: "",
@@ -129,7 +130,7 @@ export default function ExitClearanceForm() {
       firstPage.drawText(formData.office, { x: 500, y: 705, ...textOptions })
 
       // Contact info, Email, Date Hired, Date Separated
-      firstPage.drawText(formData.emailAddress, { x: 90, y: 680, ...textOptions, size: 8 })
+      firstPage.drawText(formData.emailAddress, { x: 85, y: 680, ...textOptions, size: 7 })
       firstPage.drawText(formData.contactNo, { x: 250, y: 680, ...textOptions })
       firstPage.drawText(formData.dateHired, { x: 413, y: 680, ...textOptions })
       firstPage.drawText(formData.dateSeparation, { x: 530, y: 680, ...textOptions, size: 8 })
@@ -183,43 +184,59 @@ export default function ExitClearanceForm() {
       }
 
       // Add signature if available
-      if (signature) {
-        // Convert signature DataURL to bytes
-        const signatureImage = await fetch(signature)
-        const signatureArrayBuffer = await signatureImage.arrayBuffer()
-        const signatureUint8Array = new Uint8Array(signatureArrayBuffer)
+    if (signature) {
+  // Convert signature DataURL to bytes
+  const signatureImage = await fetch(signature)
+  const signatureArrayBuffer = await signatureImage.arrayBuffer()
+  const signatureUint8Array = new Uint8Array(signatureArrayBuffer)
 
-        // Embed the signature image
-        const signatureEmbed = await pdfDoc.embedPng(signatureUint8Array)
-        const signatureDims = signatureEmbed.scale(0.15) // Reduced scale from 0.25 to 0.15
+  // Set max file size (200 KB)
+  const MAX_SIGNATURE_SIZE = 200 * 1024
+  if (signatureUint8Array.length > MAX_SIGNATURE_SIZE) {
+    throw new Error("Signature image is too large. Please upload a smaller image.")
+  }
 
-        // Draw the signature - position it above the name
-        firstPage.drawImage(signatureEmbed, {
-          x: 168,
-          y: 265, // Increased y value to move signature above the name
-          width: signatureDims.width,
-          height: signatureDims.height,
-        })
+  // Embed the signature image
+  const signatureEmbed = await pdfDoc.embedPng(signatureUint8Array)
 
-        // Draw the name text below the signature
-        firstPage.drawText(`${formData.firstName} ${formData.middleName} ${formData.lastName}`, {
-          x: 157,
-          y: 275,
-          ...textOptions,
-        })
+  // Limit image dimensions
+  const maxWidth = 100
+  const maxHeight = 50
 
-        // Add current date next to signature
-        const currentDate = new Date().toLocaleDateString()
-        firstPage.drawText(currentDate, { x: 350, y: 276, ...textOptions })
-      }
+  const widthRatio = maxWidth / signatureEmbed.width
+  const heightRatio = maxHeight / signatureEmbed.height
+  const scale = Math.min(widthRatio, heightRatio, 1)
 
+  const scaledWidth = signatureEmbed.width * scale
+  const scaledHeight = signatureEmbed.height * scale
+
+  // Draw signature image on PDF
+  firstPage.drawImage(signatureEmbed, {
+    x: 168,
+    y: 265,
+    width: scaledWidth,
+    height: scaledHeight,
+  })
+
+  // Draw the name text below the signature
+  firstPage.drawText(`${formData.firstName} ${formData.middleName} ${formData.lastName}`, {
+    x: 170,
+    y: 275,
+    ...textOptions,
+  })
+
+  // Add current date next to signature
+  const currentDate = new Date().toLocaleDateString()
+  firstPage.drawText(currentDate, {
+    x: 350,
+    y: 276,
+    ...textOptions,
+  })
+}
       // Save the PDF
       const pdfBytes = await pdfDoc.save()
       const pdfBlob = new Blob([pdfBytes], { type: "application/pdf" })
       const url = URL.createObjectURL(pdfBlob)
-
-      // Open the PDF in a new tab
-      window.open(url, "_blank")
 
       // Auto-download
       const a = document.createElement("a")
@@ -235,14 +252,8 @@ export default function ExitClearanceForm() {
         title: "PDF Generated Successfully",
         description: "You can now compose an email with this form as an attachment.",
       })
-    } catch (error) {
-      console.error("Error generating PDF:", error)
-      toast({
-        title: "Error Generating PDF",
-        description: "There was an error generating the PDF. Please try again.",
-        variant: "destructive",
-      })
-    } finally {
+    } 
+     finally {
       setIsSubmitting(false)
     }
   }
