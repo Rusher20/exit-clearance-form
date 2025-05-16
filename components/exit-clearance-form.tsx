@@ -193,7 +193,11 @@ export default function ExitClearanceForm() {
   // Set max file size (200 KB)
   const MAX_SIGNATURE_SIZE = 200 * 1024
   if (signatureUint8Array.length > MAX_SIGNATURE_SIZE) {
-    throw new Error("Signature image is too large. Please upload a smaller image.")
+   toast({
+        title: "Image is too large or not using PNG format",
+        description: "Please provide exact format.",
+        variant: "destructive",
+      })
   }
 
   // Embed the signature image
@@ -691,16 +695,6 @@ export default function ExitClearanceForm() {
                 "Generate PDF"
               )}
             </Button>
-            {/* <Button
-              type="button"
-              onClick={handleComposeEmail}
-              disabled={!pdfGenerated || isSubmitting}
-              className="bg-green-600 hover:bg-green-700"
-            >
-              <Mail className="mr-2 h-4 w-4" />
-              Compose Gmail
-            </Button> */}
-
             <Button
               type="button"
               onClick={handleNextPage}
