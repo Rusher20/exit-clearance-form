@@ -1,19 +1,17 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
-import { PDFDocument, rgb, StandardFonts } from "pdf-lib"
-import { toast } from "@/hooks/use-toast"
-import { Loader2, Upload } from "lucide-react"
-
-
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
+import { toast } from "@/hooks/use-toast";
+import { Loader2, Upload } from "lucide-react";
 export default function ExitClearanceForm() {
   const [formData, setFormData] = useState({
     lastName: "",
@@ -32,40 +30,44 @@ export default function ExitClearanceForm() {
     reasonForSeparation: "",
     otherReason: "",
     employmentStatus: "",
-  })
+  });
 
-  const [signature, setSignature] = useState<string | null>(null)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [pdfGenerated, setPdfGenerated] = useState(false)
+  const [signature, setSignature] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [pdfGenerated, setPdfGenerated] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-  }
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleReasonChange = (value: string) => {
-    setFormData((prev) => ({ ...prev, reasonForSeparation: value }))
-  }
+    setFormData((prev) => ({ ...prev, reasonForSeparation: value }));
+  };
 
   const handleEmploymentStatusChange = (value: string) => {
-    setFormData((prev) => ({ ...prev, employmentStatus: value }))
-  }
+    setFormData((prev) => ({ ...prev, employmentStatus: value }));
+  };
 
-  const handleSignatureImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
+  const handleSignatureImageUpload = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader()
+      const reader = new FileReader();
       reader.onload = (event) => {
         if (event.target?.result) {
-          setSignature(event.target.result as string)
+          setSignature(event.target.result as string);
         }
-      }
-      reader.readAsDataURL(file)
+      };
+      reader.readAsDataURL(file);
     }
-  }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     // Form validation
     if (!formData.reasonForSeparation) {
@@ -73,8 +75,8 @@ export default function ExitClearanceForm() {
         title: "Missing Information",
         description: "Please select a reason for separation.",
         variant: "destructive",
-      })
-      return
+      });
+      return;
     }
 
     if (!formData.employmentStatus) {
@@ -82,8 +84,8 @@ export default function ExitClearanceForm() {
         title: "Missing Information",
         description: "Please select an employment status.",
         variant: "destructive",
-      })
-      return
+      });
+      return;
     }
 
     if (!signature) {
@@ -91,65 +93,98 @@ export default function ExitClearanceForm() {
         title: "Missing Signature",
         description: "Please provide your signature before submitting.",
         variant: "destructive",
-      })
-      return
+      });
+      return;
     }
 
-    setIsSubmitting(true)
+    setIsSubmitting(true);
 
     try {
       // Fetch the PDF template
-      const templateResponse = await fetch("/exit-clearance-template.pdf")
-      const templateArrayBuffer = await templateResponse.arrayBuffer()
+      const templateResponse = await fetch("/exit-clearance-template.pdf");
+      const templateArrayBuffer = await templateResponse.arrayBuffer();
 
       // Load the PDF document
-      const pdfDoc = await PDFDocument.load(templateArrayBuffer)
-      const pages = pdfDoc.getPages()
-      const firstPage = pages[0]
+      const pdfDoc = await PDFDocument.load(templateArrayBuffer);
+      const pages = pdfDoc.getPages();
+      const firstPage = pages[0];
 
       // Embed font
-      const helveticaFont = await pdfDoc.embedFont(StandardFonts.Helvetica)
+      const helveticaFont = await pdfDoc.embedFont(StandardFonts.Helvetica);
 
       // Set text options
       const textOptions = {
         font: helveticaFont,
         size: 9,
         color: rgb(0, 0, 0),
-      }
+      };
 
       // Fill in the form fields
       // Name section
-      firstPage.drawText(formData.lastName, { x: 67, y: 705, ...textOptions })
-      firstPage.drawText(formData.firstName, { x: 181, y: 705, ...textOptions })
-      firstPage.drawText(formData.middleName, { x: 315, y: 705, ...textOptions })
+      firstPage.drawText(formData.lastName, { x: 67, y: 705, ...textOptions });
+      firstPage.drawText(formData.firstName, {
+        x: 181,
+        y: 705,
+        ...textOptions,
+      });
+      firstPage.drawText(formData.middleName, {
+        x: 315,
+        y: 705,
+        ...textOptions,
+      });
 
       // Department and Office
-      firstPage.drawText(formData.designation, { x: 84, y: 693, ...textOptions })
-      firstPage.drawText(formData.empNo, { x: 240, y: 693, ...textOptions })
+      firstPage.drawText(formData.designation, {
+        x: 84,
+        y: 693,
+        ...textOptions,
+      });
+      firstPage.drawText(formData.empNo, { x: 240, y: 693, ...textOptions });
       const departmentText = formData.department;
 
-// Measure the text width
-const textWidth = helveticaFont.widthOfTextAtSize(departmentText, textOptions.size);
+      // Measure the text width
+      const textWidth = helveticaFont.widthOfTextAtSize(
+        departmentText,
+        textOptions.size
+      );
 
-// Define the center you want (387 in your case)
-const centerX = 415;
+      // Define the center you want (387 in your case)
+      const centerX = 415;
 
-// Calculate the new X to center the text
-const x = centerX - textWidth / 2;
+      // Calculate the new X to center the text
+      const x = centerX - textWidth / 2;
 
-// Draw the department text centered
-firstPage.drawText(departmentText, {
-  x,
-  y: 705,
-  ...textOptions,
-});
-      firstPage.drawText(formData.office, { x: 500, y: 705, ...textOptions })
+      // Draw the department text centered
+      firstPage.drawText(departmentText, {
+        x,
+        y: 705,
+        ...textOptions,
+      });
+      firstPage.drawText(formData.office, { x: 500, y: 705, ...textOptions });
 
       // Contact info, Email, Date Hired, Date Separated
-      firstPage.drawText(formData.emailAddress, { x: 85, y: 680, ...textOptions, size: 7 })
-      firstPage.drawText(formData.contactNo, { x: 250, y: 680, ...textOptions })
-      firstPage.drawText(formData.dateHired, { x: 413, y: 680, ...textOptions })
-      firstPage.drawText(formData.dateSeparation, { x: 530, y: 680, ...textOptions, size: 8 })
+      firstPage.drawText(formData.emailAddress, {
+        x: 85,
+        y: 680,
+        ...textOptions,
+        size: 7,
+      });
+      firstPage.drawText(formData.contactNo, {
+        x: 250,
+        y: 680,
+        ...textOptions,
+      });
+      firstPage.drawText(formData.dateHired, {
+        x: 413,
+        y: 680,
+        ...textOptions,
+      });
+      firstPage.drawText(formData.dateSeparation, {
+        x: 530,
+        y: 680,
+        ...textOptions,
+        size: 8,
+      });
 
       // Reason for Separation - Mark the selected reason
       const reasonPositions = {
@@ -162,16 +197,29 @@ firstPage.drawText(departmentText, {
         awol: { x: 229, y: 644 },
         discontinuance: { x: 229, y: 631 },
         termination: { x: 229, y: 618 },
-      }
+      };
 
-      const selectedReason = formData.reasonForSeparation
-      if (selectedReason && reasonPositions[selectedReason as keyof typeof reasonPositions]) {
-        const position = reasonPositions[selectedReason as keyof typeof reasonPositions]
-        firstPage.drawText("X", { x: position.x, y: position.y, ...textOptions, size: 7 })
+      const selectedReason = formData.reasonForSeparation;
+      if (
+        selectedReason &&
+        reasonPositions[selectedReason as keyof typeof reasonPositions]
+      ) {
+        const position =
+          reasonPositions[selectedReason as keyof typeof reasonPositions];
+        firstPage.drawText("X", {
+          x: position.x,
+          y: position.y,
+          ...textOptions,
+          size: 7,
+        });
 
         // If "others" is selected, add the other reason text
         if (selectedReason === "others" && formData.otherReason) {
-          firstPage.drawText(formData.otherReason, { x: 90, y: 605, ...textOptions })
+          firstPage.drawText(formData.otherReason, {
+            x: 90,
+            y: 605,
+            ...textOptions,
+          });
         }
       }
 
@@ -183,124 +231,140 @@ firstPage.drawText(departmentText, {
         regular: { x: 478, y: 644 },
         probationary: { x: 478, y: 630 },
         projectEmployee: { x: 478, y: 618 },
-      }
+      };
 
-      const selectedStatus = formData.employmentStatus
-      if (selectedStatus && statusPositions[selectedStatus as keyof typeof statusPositions]) {
-        const position = statusPositions[selectedStatus as keyof typeof statusPositions]
-        firstPage.drawText("X", { x: position.x, y: position.y, ...textOptions, size: 7 })
+      const selectedStatus = formData.employmentStatus;
+      if (
+        selectedStatus &&
+        statusPositions[selectedStatus as keyof typeof statusPositions]
+      ) {
+        const position =
+          statusPositions[selectedStatus as keyof typeof statusPositions];
+        firstPage.drawText("X", {
+          x: position.x,
+          y: position.y,
+          ...textOptions,
+          size: 7,
+        });
       }
 
       // Additional Notes (with optional text wrapping if needed)
       if (formData.additionalNotes) {
-        const lines = formData.additionalNotes.match(/.{1,80}/g) || []
+        const lines = formData.additionalNotes.match(/.{1,80}/g) || [];
         lines.forEach((line, index) => {
-          firstPage.drawText(line, { x: 99, y: 356 - index * 10, ...textOptions })
-        })
+          firstPage.drawText(line, {
+            x: 99,
+            y: 356 - index * 10,
+            ...textOptions,
+          });
+        });
       }
 
       // Add signature if available
-    if (signature) {
-  // Convert signature DataURL to bytes
-  const signatureImage = await fetch(signature)
-  const signatureArrayBuffer = await signatureImage.arrayBuffer()
-  const signatureUint8Array = new Uint8Array(signatureArrayBuffer)
+      if (signature) {
+        // Convert signature DataURL to bytes
+        const signatureImage = await fetch(signature);
+        const signatureArrayBuffer = await signatureImage.arrayBuffer();
+        const signatureUint8Array = new Uint8Array(signatureArrayBuffer);
 
-  // Set max file size (200 KB)
-  const MAX_SIGNATURE_SIZE = 200 * 1024
-  if (signatureUint8Array.length > MAX_SIGNATURE_SIZE) {
-   toast({
-        title: "Image is too large or not using PNG format",
-        description: "Please provide exact format.",
-        variant: "destructive",
-      })
-  }
+        // Set max file size (200 KB)
+        const MAX_SIGNATURE_SIZE = 200 * 1024;
+        if (signatureUint8Array.length > MAX_SIGNATURE_SIZE) {
+          toast({
+            title: "Image is too large or not using PNG format",
+            description: "Please provide exact format.",
+            variant: "destructive",
+          });
+        }
 
-  // Embed the signature image
-  const signatureEmbed = await pdfDoc.embedPng(signatureUint8Array)
+        // Embed the signature image
+        const signatureEmbed = await pdfDoc.embedPng(signatureUint8Array);
 
-  // Limit image dimensions
-  const maxWidth = 100
-  const maxHeight = 50
+        // Limit image dimensions
+        const maxWidth = 100;
+        const maxHeight = 50;
 
-  const widthRatio = maxWidth / signatureEmbed.width
-  const heightRatio = maxHeight / signatureEmbed.height
-  const scale = Math.min(widthRatio, heightRatio, 1)
+        const widthRatio = maxWidth / signatureEmbed.width;
+        const heightRatio = maxHeight / signatureEmbed.height;
+        const scale = Math.min(widthRatio, heightRatio, 1);
 
-  const scaledWidth = signatureEmbed.width * scale
-  const scaledHeight = signatureEmbed.height * scale
+        const scaledWidth = signatureEmbed.width * scale;
+        const scaledHeight = signatureEmbed.height * scale;
 
-  // Draw signature image on PDF
-  firstPage.drawImage(signatureEmbed, {
-    x: 168,
-    y: 265,
-    width: scaledWidth,
-    height: scaledHeight,
-  })
+        // Draw signature image on PDF
+        firstPage.drawImage(signatureEmbed, {
+          x: 168,
+          y: 265,
+          width: scaledWidth,
+          height: scaledHeight,
+        });
 
-const fullName = `${formData.firstName} ${formData.middleName} ${formData.lastName}`;
+        const fullName = `${formData.firstName} ${formData.middleName} ${formData.lastName}`;
 
-// Measure the width of the text
-const textWidth = helveticaFont.widthOfTextAtSize(fullName, textOptions.size);
+        // Measure the width of the text
+        const textWidth = helveticaFont.widthOfTextAtSize(
+          fullName,
+          textOptions.size
+        );
 
-const centerX = 215;
+        const centerX = 215;
 
-// Calculate starting x to center the text
-const x = centerX - textWidth / 2;
+        // Calculate starting x to center the text
+        const x = centerX - textWidth / 2;
 
-// Draw the text
-firstPage.drawText(fullName, {
-  x,
-  y: 275, // adjust Y as needed
-  ...textOptions,
-});
+        // Draw the text
+        firstPage.drawText(fullName, {
+          x,
+          y: 275, // adjust Y as needed
+          ...textOptions,
+        });
 
-
-  // Add current date next to signature
-  const currentDate = new Date().toLocaleDateString()
-  firstPage.drawText(currentDate, {
-    x: 350,
-    y: 276,
-    ...textOptions,
-  })
-}
+        // Add current date next to signature
+        const currentDate = new Date().toLocaleDateString();
+        firstPage.drawText(currentDate, {
+          x: 350,
+          y: 276,
+          ...textOptions,
+        });
+      }
       // Save the PDF
-      const pdfBytes = await pdfDoc.save()
-      const pdfBlob = new Blob([pdfBytes], { type: "application/pdf" })
-      const url = URL.createObjectURL(pdfBlob)
+      const pdfBytes = await pdfDoc.save();
+      const pdfBlob = new Blob([pdfBytes], { type: "application/pdf" });
+      const url = URL.createObjectURL(pdfBlob);
 
       // Auto-download
-      const a = document.createElement("a")
-      a.href = url
-      a.download = `Exit_Clearance_Form_${formData.lastName}_${formData.firstName}.pdf`
-      a.click()
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `Exit_Clearance_Form_${formData.lastName}_${formData.firstName}.pdf`;
+      a.click();
 
       // Store the employee name for email
-      window.employeeName = `${formData.firstName} ${formData.lastName}`
-      setPdfGenerated(true)
+      window.employeeName = `${formData.firstName} ${formData.lastName}`;
+      setPdfGenerated(true);
 
       toast({
         title: "PDF Generated Successfully",
-        description: "You can now compose an email with this form as an attachment.",
-      })
-    } 
-     finally {
-      setIsSubmitting(false)
+        description:
+          "You can now compose an email with this form as an attachment.",
+      });
+    } finally {
+      setIsSubmitting(false);
     }
-  }
+  };
   const handleNextPage = () => {
     if (!pdfGenerated) {
       toast({
         title: "No PDF Generated",
-        description: "Please generate the PDF first before proceeding to the next page.",
+        description:
+          "Please generate the PDF first before proceeding to the next page.",
         variant: "destructive",
-      })
-      return
+      });
+      return;
     }
 
     // Navigate to the next page
-    window.location.href = "/exit-interview" // Replace with your actual next page URL
-  }
+    window.location.href = "/exit-interview"; // Replace with your actual next page URL
+  };
 
   return (
     <div
@@ -309,12 +373,18 @@ firstPage.drawText(fullName, {
     >
       <div className="relative w-full max-w-5xl bg-white shadow-xl rounded-2xl p-4 sm:p-8">
         <div className="flex justify-center mb-4">
-          <img src="/PPSI.png" alt="ProgressPro Logo" className="h-20 object-contain" />
+          <img
+            src="/PPSI.png"
+            alt="ProgressPro Logo"
+            className="h-20 object-contain"
+          />
         </div>
         <form onSubmit={handleSubmit}>
           <Card className="mb-6">
             <CardHeader className="bg-gray-100 py-2 px-4">
-              <CardTitle className="text-center text-lg font-bold">EXIT CLEARANCE FORM</CardTitle>
+              <CardTitle className="text-center text-lg font-bold">
+                EXIT CLEARANCE FORM
+              </CardTitle>
             </CardHeader>
             <CardContent className="p-4">
               {/* Personal Information */}
@@ -400,16 +470,16 @@ firstPage.drawText(fullName, {
                     <div>
                       <Label htmlFor="contactNo">Contact No.:</Label>
                       <Input
-                           id="contactNo"
-                           name="contactNo"
-                           type="tel"
-                           pattern="[0-9]*"
-                           inputMode="numeric"
-                           value={formData.contactNo}
-                           onChange={handleChange}
-                           className="h-9"
-                           required
-                           tabIndex={11}
+                        id="contactNo"
+                        name="contactNo"
+                        type="tel"
+                        pattern="[0-9]*"
+                        inputMode="numeric"
+                        value={formData.contactNo}
+                        onChange={handleChange}
+                        className="h-9"
+                        required
+                        tabIndex={11}
                       />
                     </div>
                   </div>
@@ -476,8 +546,15 @@ firstPage.drawText(fullName, {
 
               {/* Reason for Clearance Section - RadioGroup */}
               <div className="mb-6">
-                <h3 className="font-semibold text-lg mb-2">Reason for Separation:</h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="flex items-center space-x-[20rem]">
+                  <h3 className="font-semibold text-lg mb-2">
+                    Reason for Separation:
+                  </h3>
+                  <h3 className="font-semibold text-lg mb-2">
+                    Employment Status:
+                  </h3>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3  gap-4">
                   <div className="space-y-2">
                     <RadioGroup
                       value={formData.reasonForSeparation}
@@ -485,23 +562,47 @@ firstPage.drawText(fullName, {
                       className="space-y-2"
                     >
                       <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="voluntaryResignation" id="voluntaryResignation" tabIndex={12} />
-                        <Label htmlFor="voluntaryResignation">Voluntary Resignation</Label>
+                        <RadioGroupItem
+                          value="voluntaryResignation"
+                          id="voluntaryResignation"
+                          tabIndex={12}
+                        />
+                        <Label htmlFor="voluntaryResignation">
+                          Voluntary Resignation
+                        </Label>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="endOfProbationary" id="endOfProbationary" tabIndex={13} />
-                        <Label htmlFor="endOfProbationary">End of Probationary Employment</Label>
+                        <RadioGroupItem
+                          value="endOfProbationary"
+                          id="endOfProbationary"
+                          tabIndex={13}
+                        />
+                        <Label htmlFor="endOfProbationary">
+                          End of Probationary Employment
+                        </Label>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="redundancy" id="redundancy" tabIndex={14} />
+                        <RadioGroupItem
+                          value="redundancy"
+                          id="redundancy"
+                          tabIndex={14}
+                        />
                         <Label htmlFor="redundancy">Redundancy</Label>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="promotion" id="promotion" tabIndex={15} />
+                        <RadioGroupItem
+                          value="promotion"
+                          id="promotion"
+                          tabIndex={15}
+                        />
                         <Label htmlFor="promotion">Promotion</Label>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="others" id="others" tabIndex={16} />
+                        <RadioGroupItem
+                          value="others"
+                          id="others"
+                          tabIndex={16}
+                        />
                         <Label htmlFor="others">Others</Label>
                         {formData.reasonForSeparation === "others" && (
                           <Input
@@ -526,60 +627,101 @@ firstPage.drawText(fullName, {
                       className="space-y-2"
                     >
                       <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="transferOfBranch" id="transferOfBranch" tabIndex={18} />
-                        <Label htmlFor="transferOfBranch">Transfer of Branch (lateral)</Label>
+                        <RadioGroupItem
+                          value="transferOfBranch"
+                          id="transferOfBranch"
+                          tabIndex={18}
+                        />
+                        <Label htmlFor="transferOfBranch">
+                          Transfer of Branch (lateral)
+                        </Label>
                       </div>
                       <div className="flex items-center space-x-2">
                         <RadioGroupItem value="awol" id="awol" tabIndex={19} />
                         <Label htmlFor="awol">Work Abandonment</Label>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="discontinuance" id="discontinuance" tabIndex={20} />
+                        <RadioGroupItem
+                          value="discontinuance"
+                          id="discontinuance"
+                          tabIndex={20}
+                        />
                         <Label htmlFor="discontinuance">Discontinuance</Label>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="termination" id="termination" tabIndex={21} />
-                        <Label htmlFor="termination">Termination For Cause</Label>
+                        <RadioGroupItem
+                          value="termination"
+                          id="termination"
+                          tabIndex={21}
+                        />
+                        <Label htmlFor="termination">
+                          Termination For Cause
+                        </Label>
                       </div>
                     </RadioGroup>
                   </div>
 
                   {/* Employment Status - Changed to RadioGroup */}
                   <div>
-                    <h3 className="font-semibold mb-2">Employment Status:</h3>
                     <RadioGroup
                       value={formData.employmentStatus}
                       onValueChange={handleEmploymentStatusChange}
                       className="space-y-2"
                     >
                       <div className="grid grid-cols-2 gap-2">
-                        <div className="space-y-2">
+                        <div className="space-y-5">
                           <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="consultancy" id="consultancy" tabIndex={22} />
+                            <RadioGroupItem
+                              value="consultancy"
+                              id="consultancy"
+                              tabIndex={22}
+                            />
                             <Label htmlFor="consultancy">Consultancy</Label>
                           </div>
                           <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="contractual" id="contractual" tabIndex={23} />
+                            <RadioGroupItem
+                              value="contractual"
+                              id="contractual"
+                              tabIndex={23}
+                            />
                             <Label htmlFor="contractual">Contractual</Label>
                           </div>
                           <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="fixedTerm" id="fixedTerm" tabIndex={24} />
+                            <RadioGroupItem
+                              value="fixedTerm"
+                              id="fixedTerm"
+                              tabIndex={24}
+                            />
                             <Label htmlFor="fixedTerm">Fixed-Term</Label>
                           </div>
                         </div>
 
-                        <div className="space-y-2">
+                        <div className="space-y-5">
                           <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="regular" id="regular" tabIndex={25} />
+                            <RadioGroupItem
+                              value="regular"
+                              id="regular"
+                              tabIndex={25}
+                            />
                             <Label htmlFor="regular">Regular</Label>
                           </div>
                           <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="probationary" id="probationary" tabIndex={26} />
+                            <RadioGroupItem
+                              value="probationary"
+                              id="probationary"
+                              tabIndex={26}
+                            />
                             <Label htmlFor="probationary">Probationary</Label>
                           </div>
                           <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="projectEmployee" id="projectEmployee" tabIndex={27} />
-                            <Label htmlFor="projectEmployee">Project Employee</Label>
+                            <RadioGroupItem
+                              value="projectEmployee"
+                              id="projectEmployee"
+                              tabIndex={27}
+                            />
+                            <Label htmlFor="projectEmployee">
+                              Project Employee
+                            </Label>
                           </div>
                         </div>
                       </div>
@@ -593,10 +735,13 @@ firstPage.drawText(fullName, {
                 <div className="text-sm space-y-1 mb-4">
                   <p>*Indicate Not Applicable "N/A", as appropriate</p>
                   <p>
-                    *Synopsis attached, for computation details of gross final pay, total accountabilities and net final
-                    pay.
+                    *Synopsis attached, for computation details of gross final
+                    pay, total accountabilities and net final pay.
                   </p>
-                  <p>*In lieu of a missed Identification card please submit an affidavit of loss.</p>
+                  <p>
+                    *In lieu of a missed Identification card please submit an
+                    affidavit of loss.
+                  </p>
                 </div>
 
                 <div className="mt-4">
@@ -615,11 +760,13 @@ firstPage.drawText(fullName, {
               {/* Clearance Statement */}
               <div className="mb-6 text-sm">
                 <p>
-                  This clearance is understood not to cover accountabilities discovered in the future, after
-                  verification of customer records, etc.
+                  This clearance is understood not to cover accountabilities
+                  discovered in the future, after verification of customer
+                  records, etc.
                 </p>
                 <p>
-                  I will settle accountabilities with the company within 30 days or as the day of my last employment.
+                  I will settle accountabilities with the company within 30 days
+                  or as the day of my last employment.
                 </p>
               </div>
 
@@ -636,7 +783,9 @@ firstPage.drawText(fullName, {
                         <Button
                           type="button"
                           variant="outline"
-                          onClick={() => document.getElementById("signatureUpload")?.click()}
+                          onClick={() =>
+                            document.getElementById("signatureUpload")?.click()
+                          }
                           className="w-full"
                           tabIndex={29}
                         >
@@ -652,13 +801,17 @@ firstPage.drawText(fullName, {
                           tabIndex={-1} // Hidden input, not in tab order
                         />
                       </div>
-                      <p className="text-xs text-gray-500 mt-1">Supported format: PNG </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Supported format: PNG{" "}
+                      </p>
                     </div>
                   </div>
                 </div>
                 {signature && (
                   <div className="mt-4">
-                    <p className="text-sm text-gray-500 mb-2">Signature Preview:</p>
+                    <p className="text-sm text-gray-500 mb-2">
+                      Signature Preview:
+                    </p>
                     <img
                       src={signature || "/placeholder.svg"}
                       alt="Signature"
@@ -681,7 +834,12 @@ firstPage.drawText(fullName, {
           </Card>
 
           <div className="flex flex-wrap justify-end gap-4 mt-6">
-            <Button variant="outline" type="button" onClick={() => window.location.reload()} tabIndex={31}>
+            <Button
+              variant="outline"
+              type="button"
+              onClick={() => window.location.reload()}
+              tabIndex={31}
+            >
               Reset Form
             </Button>
             <Button type="submit" disabled={isSubmitting} tabIndex={32}>
@@ -707,12 +865,12 @@ firstPage.drawText(fullName, {
         </form>
       </div>
     </div>
-  )
+  );
 }
 
 // Add this to the global Window interface
 declare global {
   interface Window {
-    employeeName: string
+    employeeName: string;
   }
 }
