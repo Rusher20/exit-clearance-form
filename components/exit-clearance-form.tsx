@@ -126,7 +126,23 @@ export default function ExitClearanceForm() {
       // Department and Office
       firstPage.drawText(formData.designation, { x: 84, y: 693, ...textOptions })
       firstPage.drawText(formData.empNo, { x: 240, y: 693, ...textOptions })
-      firstPage.drawText(formData.department, { x: 387, y: 705, ...textOptions })
+      const departmentText = formData.department;
+
+// Measure the text width
+const textWidth = helveticaFont.widthOfTextAtSize(departmentText, textOptions.size);
+
+// Define the center you want (387 in your case)
+const centerX = 415;
+
+// Calculate the new X to center the text
+const x = centerX - textWidth / 2;
+
+// Draw the department text centered
+firstPage.drawText(departmentText, {
+  x,
+  y: 705,
+  ...textOptions,
+});
       firstPage.drawText(formData.office, { x: 500, y: 705, ...textOptions })
 
       // Contact info, Email, Date Hired, Date Separated
@@ -222,12 +238,23 @@ export default function ExitClearanceForm() {
     height: scaledHeight,
   })
 
-  // Draw the name text below the signature
-  firstPage.drawText(`${formData.firstName} ${formData.middleName} ${formData.lastName}`, {
-    x: 170,
-    y: 275,
-    ...textOptions,
-  })
+const fullName = `${formData.firstName} ${formData.middleName} ${formData.lastName}`;
+
+// Measure the width of the text
+const textWidth = helveticaFont.widthOfTextAtSize(fullName, textOptions.size);
+
+const centerX = 215;
+
+// Calculate starting x to center the text
+const x = centerX - textWidth / 2;
+
+// Draw the text
+firstPage.drawText(fullName, {
+  x,
+  y: 275, // adjust Y as needed
+  ...textOptions,
+});
+
 
   // Add current date next to signature
   const currentDate = new Date().toLocaleDateString()
@@ -261,34 +288,6 @@ export default function ExitClearanceForm() {
       setIsSubmitting(false)
     }
   }
-
-  // const handleComposeEmail = () => {
-  //   if (!pdfGenerated) {
-  //     toast({
-  //       title: "No PDF Generated",
-  //       description: "Please generate the PDF first before composing an email.",
-  //       variant: "destructive",
-  //     })
-  //     return
-  //   }
-
-  //   const subject = encodeURIComponent(`Exit Clearance Form - ${window.employeeName}`)
-  //   const body = encodeURIComponent(
-  //     `Please find attached the exit clearance form for ${window.employeeName}.\n\n` +
-  //       `Note: Please manually attach the downloaded PDF file named "Exit_Clearance_Form_${formData.lastName}_${formData.firstName}.pdf" to this email.`,
-  //   )
-
-  //   // Open Gmail compose window with pre-filled recipients and subject
-  //   window.open(
-  //     `https://mail.google.com/mail/?view=cm&fs=1&to=hrteam@progresspro.com.ph&cc=itteam@progresspro.com.ph&su=${subject}&body=${body}`,
-  //     "_blank",
-  //   )
-
-  //   toast({
-  //     title: "Gmail Compose Opened",
-  //     description: "Don't forget to attach the downloaded PDF file to your email.",
-  //   })
-  // }
   const handleNextPage = () => {
     if (!pdfGenerated) {
       toast({

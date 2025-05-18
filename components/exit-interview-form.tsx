@@ -1,19 +1,17 @@
 "use client"
 
+import { Button } from "./ui/button";
 import { CardHeader } from "./ui/card";
 import { CardTitle } from "./ui/card";
-import { Label } from "@radix-ui/react-label";
-import { Input } from "./ui/input";
-import { RadioGroup } from "./ui/radio-group";
-import { RadioGroupItem } from "./ui/radio-group";
 import { toast } from "@/hooks/use-toast";
-import { useState } from "react";
-import { Button } from "@/components/ui/button"
+
 
 
 
 export default function ExitInterview(){
- 
+ const doneFillingUp= () =>{
+  window.location.href= "/exit-page"
+ }
   const handleComposeEmail = () => {
   
 
@@ -52,65 +50,15 @@ export default function ExitInterview(){
             
             <h3 className=" text-lg mb-[5px]"> Please fill up the form: </h3>
 
-            <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSfiVKL6mfpJCnG5BgMKRcFSoODtRi6NWTvI4ZKBGIzHK6sUXg/viewform?embedded=true" width="900" height="500"  ></iframe>
-                {/* <div>
-                  <div className="flex space-y-2">
-                    <RadioGroup
-                      className="space-y-2"
-                    >
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="type" id="type" tabIndex={12} />
-                        <Label htmlFor="type">Type of Work</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="compensation" id="compensation" tabIndex={13} />
-                        <Label htmlFor="compensation">Compensation</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="lack" id="lack" tabIndex={14} />
-                        <Label htmlFor="lack">Lack of Recognition</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="company" id="company" tabIndex={15} />
-                        <Label htmlFor="company">Company Culture</Label>
-                        </div>
-                        </RadioGroup>
-                        <div className="space-y-2">
-                    <RadioGroup
-                      className="space-y-2 ml-[8rem] "
-                    >
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="quality" id="quality" tabIndex={16} />
-                        <Label htmlFor="quality">Quality of Supervision</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="work" id="work" tabIndex={17} />
-                        <Label htmlFor="work">Work Conditions</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="family" id="family" tabIndex={18} />
-                        <Label htmlFor="family">Family Circumstances</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="termination" id="termination" tabIndex={19} />
-                        <Label htmlFor="termination">Termination For Cause</Label>
-                      </div>
-                    </RadioGroup>
-                      </div>
-                      </div>
-                     </div> */}
-
+            <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSfiVKL6mfpJCnG5BgMKRcFSoODtRi6NWTvI4ZKBGIzHK6sUXg/viewform?embedded=true" width="900" height="400"  ></iframe>
             </div>
             </div>
         </form>
-        <h3 className="  mb-[5px]"> After filling up the form send the Exit_Clearance_Form.pdf in Gmail below: </h3>
-        <Button
+           <Button
               type="button"
-              onClick={handleComposeEmail}
-              className="bg-green-600 hover:bg-green-700"
-              tabIndex={33}
+              onClick={doneFillingUp}
             >
-              Compose Gmail
+              Done
             </Button>
 </div>
   </div>
