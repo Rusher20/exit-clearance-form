@@ -24,13 +24,6 @@ export default function ExitInterview() {
           />
         </div>
 
-        {/* Header */}
-        <CardHeader className="bg-gray-100 py-3 px-5 rounded-lg shadow mb-6">
-          <CardTitle className="text-center text-lg font-bold">
-            EXIT CLEARANCE FORM
-          </CardTitle>
-        </CardHeader>
-
         {/* Form Section */}
         <div className="space-y-4">
           <h3 className="text-lg font-medium text-gray-700">
@@ -45,17 +38,6 @@ export default function ExitInterview() {
               className="rounded-xl border border-gray-300"
             ></iframe>
           </div>
-        </div>
-
-        {/* Buttons */}
-        <div className="flex flex-col sm:flex-row justify-center gap-4 mt-8">
-          <Button
-            type="button"
-            onClick={doneFillingUp}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg shadow"
-          >
-            Done
-          </Button>
         </div>
       </div>
     </div>
